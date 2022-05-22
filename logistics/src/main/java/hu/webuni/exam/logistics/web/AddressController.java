@@ -29,6 +29,12 @@ public class AddressController {
         return addressMapper.airportsToDtos(addressService.findAll());
     }
 
+    @GetMapping("/search")
+    public List<AddressDto> getAll(@RequestBody AddressDto addressDto) {
+        return addressMapper.airportsToDtos(addressService.findAddressByExample(addressMapper.dtoToAddress(addressDto)));
+    }
+
+
     @GetMapping("/{id}")
     public AddressDto getAddressById(@PathVariable long id) {
         Address address = addressService.findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));

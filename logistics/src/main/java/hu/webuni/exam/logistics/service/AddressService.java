@@ -4,8 +4,12 @@ import hu.webuni.exam.logistics.exception.NotValidAddressException;
 import hu.webuni.exam.logistics.model.Address;
 import hu.webuni.exam.logistics.repository.AddressRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -38,7 +42,7 @@ public class AddressService {
     }
 
     private void checkAddressIsValid(Address address) {
-        if (Objects.isNull(address)) {
+        if (ObjectUtils.isEmpty(address)) {
             throw new NotValidAddressException();
         }
     }
@@ -49,5 +53,33 @@ public class AddressService {
         } else {
             throw new NoSuchElementException();
         }
+    }
+
+    public List<Address> findAddressByExample(Address example) {
+
+        String city = example.getCity();
+        String iso = example.getIso();
+        String postcode = example.getPostcode();
+        String street = example.getStreet();
+
+        Specification<Address> spec = Specification.where(null);
+
+        if (StringUtils.hasText(city)) {
+            spec = spec.and(AddressSpecifications.hasCity(city));
+        }
+
+        if (StringUtils.hasText(street)) {
+            spec = spec.and(AddressSpecifications.hasStreet(street));
+        }
+
+        if (StringUtils.hasText(iso)) {
+            spec = spec.and(AddressSpecifications.hasIso(iso));
+        }
+
+        if (StringUtils.hasText(postcode)) {
+            spec = spec.and(AddressSpecifications.hasPostCode(postcode));
+        }
+
+        return addressRepository.findAll(spec, Sort.by("id"));
     }
 }
