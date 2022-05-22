@@ -4,13 +4,12 @@ import hu.webuni.airport.model.Airport;
 import hu.webuni.airport.model.Flight;
 import hu.webuni.airport.repository.AirportRepository;
 import hu.webuni.airport.repository.FlightRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-import javax.persistence.TypedQuery;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -79,13 +78,47 @@ public class AirportService {
     }
 
     @Transactional
-    public void createFlight() {
+    public Flight createFlight(String flightNumber, long takeoffAirportId, long landingAirportId, LocalDateTime takeoffDateTime) {
         Flight flight = new Flight();
-        flight.setFlightNumber("asdasd");
-        flight.setTakeoff(airportRepository.findById(1L).get());
-        flight.setLanding(airportRepository.findById(3L).get());
-        flight.setTakeoffTime(LocalDateTime.of(2021,4,10,10,0,0));
-        flightRepository.save(flight);
+        flight.setFlightNumber(flightNumber);
+        flight.setTakeoff(airportRepository.findById(takeoffAirportId).get());
+        flight.setLanding(airportRepository.findById(landingAirportId).get());
+        flight.setTakeoffTime(takeoffDateTime);
+        return flightRepository.save(flight);
+    }
+
+    public List<Flight> findFlightsByExample(Flight example) {
+
+        long id = example.getId();
+        String flightNumber = example.getFlightNumber();
+        Airport takeoff = example.getTakeoff();
+        String takeoffIata = null;
+
+        if (takeoff != null) {
+            takeoffIata = takeoff.getIata();
+        }
+
+        LocalDateTime takeoffTime = example.getTakeoffTime();
+
+        Specification<Flight> spec = Specification.where(null);
+
+        if (id > 0) {
+            spec = spec.and(FlightSpecifications.hasId(id));
+        }
+
+        if(StringUtils.hasText(flightNumber)) {
+            spec = spec.and(FlightSpecifications.hasFlightNumber(flightNumber));
+        }
+
+        if(StringUtils.hasText(takeoffIata)) {
+            spec = spec.and(FlightSpecifications.hasTakeoffIata(takeoffIata));
+        }
+
+        if (takeoffTime != null) {
+            spec = spec.and(FlightSpecifications.hasTakeoffTime(takeoffTime));
+        }
+
+        return flightRepository.findAll(spec, Sort.by("id"));
     }
 
 

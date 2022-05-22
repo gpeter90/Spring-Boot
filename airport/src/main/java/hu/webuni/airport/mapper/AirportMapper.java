@@ -3,7 +3,6 @@ package hu.webuni.airport.mapper;
 import hu.webuni.airport.dto.AirportDto;
 import hu.webuni.airport.model.Airport;
 import org.mapstruct.Mapper;
-import org.springframework.http.ResponseEntity;
 
 import java.util.List;
 

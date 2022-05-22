@@ -28,6 +28,11 @@ public class Airport {
         this.iata = iata;
     }
 
+    public Airport(String name, String iata) {
+        this.name = name;
+        this.iata = iata;
+    }
+
     public long getId() {
         return id;
     }
