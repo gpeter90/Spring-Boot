@@ -1,8 +1,6 @@
 package hu.webuni.exam.logistics.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
+import javax.persistence.*;
 
 @Entity
 public class Section {
@@ -13,14 +11,18 @@ public class Section {
 
     private long number;
 
-    private long fromMilestone;
+    @ManyToOne
+    @JoinColumn(name = "from_milestone_id")
+    private MileStone fromMilestone;
 
-    private long toMilestone;
+    @ManyToOne
+    @JoinColumn(name = "to_milestone_id")
+    private MileStone toMilestone;
 
     public Section() {
     }
 
-    public Section(long id, long number, long fromMilestone, long toMilestone) {
+    public Section(long id, long number, MileStone fromMilestone, MileStone toMilestone) {
         this.id = id;
         this.number = number;
         this.fromMilestone = fromMilestone;
@@ -43,19 +45,19 @@ public class Section {
         this.number = number;
     }
 
-    public long getFromMilestone() {
+    public MileStone getFromMilestone() {
         return fromMilestone;
     }
 
-    public void setFromMilestone(long fromMilestone) {
+    public void setFromMilestone(MileStone fromMilestone) {
         this.fromMilestone = fromMilestone;
     }
 
-    public long getToMilestone() {
+    public MileStone getToMilestone() {
         return toMilestone;
     }
 
-    public void setToMilestone(long toMilestone) {
+    public void setToMilestone(MileStone toMilestone) {
         this.toMilestone = toMilestone;
     }
 }

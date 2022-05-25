@@ -1,6 +1,7 @@
 package hu.webuni.exam.logistics.web;
 
 import hu.webuni.exam.logistics.dto.AddressDto;
+import hu.webuni.exam.logistics.exception.NotValidAddressException;
 import hu.webuni.exam.logistics.mapper.AddressMapper;
 import hu.webuni.exam.logistics.model.Address;
 import hu.webuni.exam.logistics.service.AddressService;
@@ -30,8 +31,12 @@ public class AddressController {
     }
 
     @GetMapping("/search")
-    public List<AddressDto> getAll(@RequestBody AddressDto addressDto) {
-        return addressMapper.airportsToDtos(addressService.findAddressByExample(addressMapper.dtoToAddress(addressDto)));
+    public List<AddressDto> getAll(@RequestBody AddressDto addressDto, @RequestParam String page, @RequestParam String size, @RequestParam String sort) {
+        try {
+            return addressMapper.airportsToDtos(addressService.findAddressByExample(addressMapper.dtoToAddress(addressDto), page, size, sort));
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
     }
 
 
@@ -43,8 +48,12 @@ public class AddressController {
 
     @PostMapping
     public AddressDto createAddress(@RequestBody @NonNull AddressDto addressDto) {
-        Address address = addressService.saveAddress(addressMapper.dtoToAddress(addressDto));
-        return addressMapper.addresstoDto(address);
+        try {
+            Address address = addressService.saveAddress(addressMapper.dtoToAddress(addressDto));
+            return addressMapper.addresstoDto(address);
+        } catch (NotValidAddressException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
+        }
     }
 
     @PutMapping("/{id}")

@@ -3,6 +3,9 @@ package hu.webuni.exam.logistics.service;
 import hu.webuni.exam.logistics.model.Address;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.util.Collection;
+import java.util.function.Predicate;
+
 public class AddressSpecifications {
 
     public static Specification<Address> hasCity(String city) {
