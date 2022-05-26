@@ -13,7 +13,7 @@ public class MileStoneService {
     MileStoneRepository mileStoneRepository;
 
     @Transactional
-    public MileStone addDelayToMileStone(MileStone mileStone) {
+    public MileStone addNewMilestone(MileStone mileStone) {
         return mileStoneRepository.save(mileStone);
     }
 }

@@ -4,8 +4,8 @@ import hu.webuni.exam.logistics.exception.NotValidAddressException;
 import hu.webuni.exam.logistics.model.Address;
 import hu.webuni.exam.logistics.repository.AddressRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,7 +55,7 @@ public class AddressService {
         }
     }
 
-    public List<Address> findAddressByExample(Address example, String page, String size, String sort) {
+    public Page<Address> findAddressByExample(Address example, Pageable pageable) {
         String city = example.getCity();
         String iso = example.getIso();
         String postcode = example.getPostcode();
@@ -79,16 +79,8 @@ public class AddressService {
             spec = spec.and(AddressSpecifications.hasPostCode(postcode));
         }
 
-        if (StringUtils.hasText(page) ) {
-            int p = Integer.parseInt(page);
-            return (List<Address>) addressRepository.findAll(spec, Pageable.ofSize(p));
-        }
+        return addressRepository.findAll(spec, pageable);
 
-        if (StringUtils.hasText(sort) ) {
-            return addressRepository.findAll(spec, Sort.by(sort));
-        } else {
-            return addressRepository.findAll(spec, Sort.by("id"));
-        }
 
     }
 }

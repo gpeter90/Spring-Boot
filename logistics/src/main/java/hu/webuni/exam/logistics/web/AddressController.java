@@ -6,6 +6,9 @@ import hu.webuni.exam.logistics.mapper.AddressMapper;
 import hu.webuni.exam.logistics.model.Address;
 import hu.webuni.exam.logistics.service.AddressService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.lang.NonNull;
@@ -27,13 +30,20 @@ public class AddressController {
 
     @GetMapping
     public List<AddressDto> getAll() {
-        return addressMapper.airportsToDtos(addressService.findAll());
+        return addressMapper.addressesToDtos(addressService.findAll());
     }
 
     @GetMapping("/search")
-    public List<AddressDto> getAll(@RequestBody AddressDto addressDto, @RequestParam String page, @RequestParam String size, @RequestParam String sort) {
+    public List<AddressDto> getAll(@RequestBody AddressDto addressDto,
+                                   @RequestParam(value = "page", required = false) Integer page,
+                                   @RequestParam(value = "size", required = false) Integer size,
+                                   @RequestParam(value = "sort", required = false) String sort,
+                                   @PageableDefault(page = 0, size = Integer.MAX_VALUE, sort = {"id"}) Pageable pageable) {
         try {
-            return addressMapper.airportsToDtos(addressService.findAddressByExample(addressMapper.dtoToAddress(addressDto), page, size, sort));
+            List<Address> addresses;
+            Page<Address> addressPage = addressService.findAddressByExample(addressMapper.dtoToAddress(addressDto), pageable);
+            addresses = addressPage.getContent();
+            return addressMapper.addressesToDtos(addresses);
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }

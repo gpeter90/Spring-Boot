@@ -1,5 +1,7 @@
 package hu.webuni.exam.logistics.model;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -16,6 +18,7 @@ public class MileStone {
     @OneToOne
     private Address address;
 
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime plannedTime;
 
     public MileStone() {
