@@ -16,4 +16,8 @@ public class SectionService {
     public Section addNewSection(Section section) {
         return sectionRepository.save(section);
     }
+
+    public boolean isSectionExistsById(long id) {
+        return sectionRepository.existsById(id);
+    }
 }

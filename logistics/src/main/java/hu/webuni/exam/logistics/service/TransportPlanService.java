@@ -1,15 +1,29 @@
 package hu.webuni.exam.logistics.service;
 
 import hu.webuni.exam.logistics.model.MileStone;
-import hu.webuni.exam.logistics.model.Section;
 import hu.webuni.exam.logistics.model.TransportPlan;
 import hu.webuni.exam.logistics.repository.TransportPlanRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
 @Service
 public class TransportPlanService {
+
+    @Value("${transport.delay.decrease.low.percent}")
+    private double lowIncomeDecrease;
+
+    @Value("${transport.delay.decrease.medium.percent}")
+    private double mediumIncomeDecrease;
+
+    @Value("${transport.delay.decrease.high.percent}")
+    private double highIncomeDecrease;
 
     @Autowired
     TransportPlanRepository transportPlanRepository;
@@ -21,46 +35,51 @@ public class TransportPlanService {
     SectionService sectionService;
 
     @Transactional
-    public TransportPlan addNewTransportPlan(TransportPlan transportPlan) {
-        Section section = transportPlan.getSection();
-
-        MileStone fromMilestone = section.getFromMilestone();
-        MileStone toMilestone = section.getToMilestone();
-
-        fromMilestone = mileStoneService.addNewMilestone(fromMilestone);
-        toMilestone = mileStoneService.addNewMilestone(toMilestone);
-
-        section.setFromMilestone(fromMilestone);
-        section.setToMilestone(toMilestone);
-
-        section = sectionService.addNewSection(section);
-
-        transportPlan.setSection(section);
-
-        return transportPlanRepository.save(transportPlan);
-    }
-
-    @Transactional
     public TransportPlan addDelayToTransportPlan(TransportPlan transportPlan) {
         if (transportPlanRepository.existsById(transportPlan.getId())) {
-            Section section = transportPlan.getSection();
 
-            MileStone fromMilestone = section.getFromMilestone();
-            MileStone toMilestone = section.getToMilestone();
+            if (sectionService.isSectionExistsById(transportPlan.getSection().getId())) {
 
-            fromMilestone = mileStoneService.addNewMilestone(fromMilestone);
-            toMilestone = mileStoneService.addNewMilestone(toMilestone);
+                LocalDateTime plannedTime = mileStoneService.findMilestoneById(
+                        transportPlan
+                                .getSection()
+                                .getToMilestone().getId()
+                        ).get().getPlannedTime();
 
-            section.setFromMilestone(fromMilestone);
-            section.setToMilestone(toMilestone);
+                LocalDateTime delayedTime = transportPlan.getSection().getToMilestone().getPlannedTime();
 
-            section = sectionService.addNewSection(section);
+                Optional<TransportPlan> originalTransportPlan = transportPlanRepository.findById(transportPlan.getId());
+                long delayInMinutes = ChronoUnit.MINUTES.between(plannedTime, delayedTime);
 
-            transportPlan.setSection(section);
+                if (30 <= delayInMinutes && delayInMinutes < 60) {
+                    long originalIncome = originalTransportPlan.get().getIncome();
+                    transportPlan.setIncome((long) (originalIncome - (originalIncome * (lowIncomeDecrease / 100))));
+                }
 
-            return transportPlanRepository.save(transportPlan);
+                if (60 <= delayInMinutes && delayInMinutes < 120) {
+                    long originalIncome = originalTransportPlan.get().getIncome();
+                    transportPlan.setIncome((long) (originalIncome - (originalIncome * (mediumIncomeDecrease / 100))));
+                }
+
+                if (120 < delayInMinutes) {
+                    long originalIncome = originalTransportPlan.get().getIncome();
+                    transportPlan.setIncome((long) (originalIncome - (originalIncome * (highIncomeDecrease / 100))));
+                }
+
+                MileStone toMilestone = mileStoneService.updateMilestone(transportPlan.getSection().getToMilestone());
+
+                MileStone fromMilestone = mileStoneService.updateMilestone(transportPlan.getSection().getFromMilestone());
+
+                transportPlan.getSection().setFromMilestone(fromMilestone);
+                transportPlan.getSection().setToMilestone(toMilestone);
+
+                transportPlan.setSection(sectionService.addNewSection(transportPlan.getSection()));
+
+                return transportPlanRepository.save(transportPlan);
+            }
         }
-        return null;
+
+        throw new NoSuchElementException();
     }
 
 }
