@@ -37,7 +37,7 @@ public class JwtService {
                 .withIssuer(issuer)
                 .build()
                 .verify(jwtToken);
-        return new User(decodedJwt.getSubject(), "dummy",
+        return new User(decodedJwt.getSubject(), "pass",
                 decodedJwt.getClaim(AUTH).asList(String.class)
                         .stream().map(SimpleGrantedAuthority::new).collect(Collectors.toList())
         );
