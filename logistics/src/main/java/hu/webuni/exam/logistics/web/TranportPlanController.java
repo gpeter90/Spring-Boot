@@ -1,6 +1,7 @@
 package hu.webuni.exam.logistics.web;
 
 import hu.webuni.exam.logistics.dto.TransportPlanDto;
+import hu.webuni.exam.logistics.exception.NoValidMileStoneToTranportPlanException;
 import hu.webuni.exam.logistics.mapper.TransportPlanMapper;
 import hu.webuni.exam.logistics.model.TransportPlan;
 import hu.webuni.exam.logistics.service.TransportPlanService;
@@ -29,6 +30,8 @@ public class TranportPlanController {
             return transportPlanMapper.TransportPlantoDto(transportPlanService.addDelayToTransportPlan(transportPlan));
         } catch (NoSuchElementException e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+        } catch (NoValidMileStoneToTranportPlanException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST);
         }
     }
 }
