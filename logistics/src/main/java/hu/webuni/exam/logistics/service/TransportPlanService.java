@@ -70,6 +70,7 @@ public class TransportPlanService {
     }
 
     private TransportPlan checkFromMilestoneChanges(TransportPlan transportPlan) {
+
         if (isFromMilestoneChanged(transportPlan)) {
 
             Section section = transportPlan.getSection();
@@ -94,6 +95,7 @@ public class TransportPlanService {
     }
 
     private boolean isFromMilestoneChanged(TransportPlan transportPlan) {
+
         LocalDateTime originalTime = mileStoneService.findMilestoneById(
                 transportPlan
                         .getSection()
